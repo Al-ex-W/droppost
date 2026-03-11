@@ -1,0 +1,12 @@
+# Default: normalize line endings to LF in the repo
+* text=auto eol=lf
+
+# Shell scripts must be LF
+*.sh text eol=lf
+
+# PowerShell scripts: CRLF on checkout (Windows)
+*.ps1 text eol=crlf
+
+# Config/template files: LF
+*.conf text eol=lf
+*.toml text eol=lf

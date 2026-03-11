@@ -1,0 +1,23 @@
+# --- Generated configs with real values (never commit these) ---
+local/wireguard/wg0.conf
+local/rustypaste/config.toml
+vps/wireguard/wg0.conf
+vps/nginx/keys.conf
+vps/nginx/internal_token.conf
+
+# WireGuard keys
+*.key
+*.pub
+
+# rustypaste uploads/data
+local/rustypaste/data/
+uploads/
+
+# Environment files
+.env
+*.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini

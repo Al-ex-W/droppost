@@ -1,0 +1,19 @@
+# API keys config — example file
+#
+# Copy to /etc/nginx/conf.d/droppost-keys.conf and fill in real keys.
+# That file is gitignored and lives on the server only.
+#
+# How to generate a key:
+#   openssl rand -hex 32
+#
+# Format: one line per user inside the map block.
+#   "Bearer <key>"  1;  # <name/comment>
+#
+# To revoke access: delete the user's line and run: nginx -t && systemctl reload nginx
+
+map $http_authorization $authorized {
+    default 0;
+
+    # "Bearer xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"  1;  # alice
+    # "Bearer yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy"  1;  # bob
+}

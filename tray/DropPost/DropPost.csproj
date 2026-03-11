@@ -7,6 +7,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>DropPost</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <ApplicationIcon />
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
   </PropertyGroup>
 </Project>

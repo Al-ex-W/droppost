@@ -11,6 +11,7 @@ workers = 2
 max_content_length = "100MB"
 upload_path = "C:\\ProgramData\\rustypaste\\uploads"
 timeout = "30s"
+expose_list = true
 
 # No auth_token here — authentication is handled by nginx on the VPS.
 # The WireGuard tunnel + firewall rule is the access control for this port.
@@ -21,9 +22,7 @@ default_extension = "txt"
 [cleanup]
 enabled = true
 interval = "1h"
-# Delete files past their expiry
 delete_expired_files.enabled = true
-# Delete files that have no corresponding metadata (orphaned)
 delete_orphan_files.enabled = false
 
 [landing_page]

@@ -68,6 +68,8 @@ class TrayApp : ApplicationContext
         menu.Items.Add(uploadFile);
         menu.Items.Add(uploadClip);
         menu.Items.Add(new ToolStripSeparator());
+        menu.Items.Add(new ToolStripMenuItem("Browse Files...", null, (_, _) => OpenBrowser()));
+        menu.Items.Add(new ToolStripSeparator());
         menu.Items.Add(expiryMenu);
         menu.Items.Add(new ToolStripSeparator());
         menu.Items.Add(new ToolStripMenuItem("Settings...", null, (_, _) => OpenSettings()));
@@ -126,6 +128,12 @@ class TrayApp : ApplicationContext
     }
 
     // ── Settings ──────────────────────────────────────────────────────────────
+
+    private void OpenBrowser()
+    {
+        if (!CheckSettings()) return;
+        new FileBrowserForm(_settings).Show();
+    }
 
     private void OpenSettings()
     {

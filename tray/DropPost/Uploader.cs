@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -9,28 +10,29 @@ namespace DropPost;
 class Uploader
 {
     private readonly AppSettings _settings;
-    private static readonly HttpClient Http = new();
+    // No timeout — large file uploads can take a very long time
+    private static readonly HttpClient Http = new() { Timeout = System.Threading.Timeout.InfiniteTimeSpan };
 
     public Uploader(AppSettings settings) => _settings = settings;
 
-    public Task<string> UploadFileAsync(string filePath, string expiry) =>
-        PostAsync(
-            fileBytes: File.ReadAllBytes(filePath),
-            fileName: $"{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}_{Path.GetFileName(filePath)}",
-            contentType: "application/octet-stream",
-            expiry: expiry);
-
-    public Task<string> UploadTextAsync(string text, string expiry) =>
-        PostAsync(
-            fileBytes: Encoding.UTF8.GetBytes(text),
-            fileName: $"{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}.txt",
-            contentType: "text/plain",
-            expiry: expiry);
-
-    private async Task<string> PostAsync(byte[] fileBytes, string fileName, string contentType, string expiry)
+    public Task<string> UploadFileAsync(string filePath, string expiry)
     {
+        var fileName = $"{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}_{Path.GetFileName(filePath)}";
+        return PostStreamAsync(File.OpenRead(filePath), fileName, "application/octet-stream", expiry);
+    }
+
+    public Task<string> UploadTextAsync(string text, string expiry)
+    {
+        var fileName = $"{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}.txt";
+        var stream = new MemoryStream(Encoding.UTF8.GetBytes(text));
+        return PostStreamAsync(stream, fileName, "text/plain", expiry);
+    }
+
+    private async Task<string> PostStreamAsync(Stream stream, string fileName, string contentType, string expiry)
+    {
+        using var _ = stream;
         using var content = new MultipartFormDataContent();
-        var fileContent = new ByteArrayContent(fileBytes);
+        var fileContent = new StreamContent(stream);
         fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse(contentType);
         content.Add(fileContent, "file", fileName);
 
@@ -41,7 +43,7 @@ class Uploader
         using var req = new HttpRequestMessage(HttpMethod.Post, url) { Content = content };
         req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _settings.ApiKey);
 
-        var resp = await Http.SendAsync(req);
+        var resp = await Http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead);
         resp.EnsureSuccessStatusCode();
         return (await resp.Content.ReadAsStringAsync()).Trim();
     }

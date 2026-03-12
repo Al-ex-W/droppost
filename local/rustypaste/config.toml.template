@@ -10,7 +10,7 @@ address = "10.8.0.2:8000"
 workers = 2
 max_content_length = "100MB"
 upload_path = "C:\\ProgramData\\rustypaste\\uploads"
-timeout = 30
+timeout = "30s"
 
 # No auth_token here — authentication is handled by nginx on the VPS.
 # The WireGuard tunnel + firewall rule is the access control for this port.

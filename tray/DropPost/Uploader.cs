@@ -16,14 +16,14 @@ class Uploader
     public Task<string> UploadFileAsync(string filePath, string expiry) =>
         PostAsync(
             fileBytes: File.ReadAllBytes(filePath),
-            fileName: Path.GetFileName(filePath),
+            fileName: $"{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}_{Path.GetFileName(filePath)}",
             contentType: "application/octet-stream",
             expiry: expiry);
 
     public Task<string> UploadTextAsync(string text, string expiry) =>
         PostAsync(
             fileBytes: Encoding.UTF8.GetBytes(text),
-            fileName: "paste.txt",
+            fileName: $"{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}.txt",
             contentType: "text/plain",
             expiry: expiry);
 

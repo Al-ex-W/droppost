@@ -8,7 +8,7 @@
 # Change 10.8.0.2 if you used a different WireGuard address.
 address = "10.8.0.2:8000"
 workers = 2
-max_content_length = "2GB"
+max_content_length = "50GB"
 upload_path = "C:\\ProgramData\\rustypaste\\uploads"
 timeout = "30s"
 expose_list = true

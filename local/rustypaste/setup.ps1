@@ -17,7 +17,6 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
 # ─── Configuration ────────────────────────────────────────────────────────────
-$RUSTYPASTE_VERSION = "0.15.1"        # Update when a new release is available
 $WIREGUARD_VPS_IP   = "10.8.0.1"     # VPS WireGuard IP — matches vps/wireguard/wg0.conf
 $RUSTYPASTE_PORT    = 8000
 $INSTALL_DIR        = "C:\ProgramData\rustypaste"
@@ -36,28 +35,22 @@ New-Item -ItemType Directory -Force -Path $UPLOAD_DIR  | Out-Null
 Write-Host "  $INSTALL_DIR"
 Write-Host "  $UPLOAD_DIR"
 
-# 2. Download rustypaste binary
-Write-Step "Downloading rustypaste v$RUSTYPASTE_VERSION"
-$zipName    = "rustypaste-$RUSTYPASTE_VERSION-x86_64-pc-windows-msvc.zip"
-$downloadUrl = "https://github.com/orhun/rustypaste/releases/download/v$RUSTYPASTE_VERSION/$zipName"
-$zipPath    = "$INSTALL_DIR\rustypaste.zip"
-$extractDir = "$INSTALL_DIR\_extract"
-
-Write-Host "  Fetching $downloadUrl"
-Invoke-WebRequest -Uri $downloadUrl -OutFile $zipPath -UseBasicParsing
-
-New-Item -ItemType Directory -Force -Path $extractDir | Out-Null
-Expand-Archive -Path $zipPath -DestinationPath $extractDir -Force
-
-# Find the binary (may be nested in a subdirectory)
-$foundBinary = Get-ChildItem -Recurse -Path $extractDir -Filter "rustypaste.exe" | Select-Object -First 1
-if (-not $foundBinary) {
-    Write-Error "Could not find rustypaste.exe in the downloaded archive. Check the release URL."
+# 2. Build rustypaste via cargo
+Write-Step "Building rustypaste"
+if (-not (Get-Command cargo -ErrorAction SilentlyContinue)) {
+    Write-Error "cargo not found. Install Rust first: winget install Rustlang.Rustup, then restart your terminal."
     exit 1
 }
-Copy-Item -Path $foundBinary.FullName -Destination $BINARY_PATH -Force
-Remove-Item -Recurse -Force $extractDir
-Remove-Item -Force $zipPath
+Write-Host "  Running: cargo install rustypaste (this takes a few minutes the first time)"
+cargo install rustypaste 2>&1 | Write-Host
+
+$cargobin = cargo locate-project --quiet 2>$null
+$cargoBinPath = Join-Path $env:USERPROFILE ".cargo\bin\rustypaste.exe"
+if (-not (Test-Path $cargoBinPath)) {
+    Write-Error "Build succeeded but rustypaste.exe not found at $cargoBinPath"
+    exit 1
+}
+Copy-Item -Path $cargoBinPath -Destination $BINARY_PATH -Force
 Write-Host "  Installed to $BINARY_PATH"
 
 # 3. Copy config template if config.toml doesn't exist

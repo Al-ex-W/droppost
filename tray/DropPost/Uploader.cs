@@ -33,10 +33,12 @@ class Uploader
         var fileContent = new ByteArrayContent(fileBytes);
         fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse(contentType);
         content.Add(fileContent, "file", fileName);
-        if (expiry != "never")
-            content.Add(new StringContent(expiry), "expire");
 
-        using var req = new HttpRequestMessage(HttpMethod.Post, _settings.ServerUrl) { Content = content };
+        var url = expiry != "never"
+            ? $"{_settings.ServerUrl}?expire={expiry}"
+            : _settings.ServerUrl;
+
+        using var req = new HttpRequestMessage(HttpMethod.Post, url) { Content = content };
         req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _settings.ApiKey);
 
         var resp = await Http.SendAsync(req);

@@ -42,10 +42,31 @@ if (-not (Get-Command cargo -ErrorAction SilentlyContinue)) {
     exit 1
 }
 Write-Host "  Running: cargo install rustypaste (this takes a few minutes the first time)"
-cargo install rustypaste 2>&1 | Write-Host
 
-$cargobin = cargo locate-project --quiet 2>$null
-$cargoBinPath = Join-Path $env:USERPROFILE ".cargo\bin\rustypaste.exe"
+# cargo may not be in PATH when running as admin — find it explicitly
+$cargoExe = Get-Command cargo -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source
+if (-not $cargoExe) {
+    # fall back to common user locations
+    $candidates = @(
+        "$env:USERPROFILE\.cargo\bin\cargo.exe",
+        "C:\Users\$env:USERNAME\.cargo\bin\cargo.exe"
+    )
+    $cargoExe = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+}
+if (-not $cargoExe) {
+    Write-Error "cargo not found. Install Rust: winget install Rustlang.Rustup, restart terminal, then re-run."
+    exit 1
+}
+Write-Host "  Using cargo at: $cargoExe"
+$cargoBinDir = Split-Path $cargoExe
+
+# Run cargo install, allowing stderr (progress output) without aborting
+$prev = $ErrorActionPreference
+$ErrorActionPreference = "Continue"
+& $cargoExe install rustypaste
+$ErrorActionPreference = $prev
+
+$cargoBinPath = Join-Path $cargoBinDir "rustypaste.exe"
 if (-not (Test-Path $cargoBinPath)) {
     Write-Error "Build succeeded but rustypaste.exe not found at $cargoBinPath"
     exit 1

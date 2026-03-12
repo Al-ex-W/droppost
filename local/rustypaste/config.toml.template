@@ -9,7 +9,7 @@
 address = "10.8.0.2:8000"
 workers = 2
 max_content_length = "50GB"
-upload_path = "C:\\ProgramData\\rustypaste\\uploads"
+upload_path = "E:\\rustypaste"
 timeout = "3600s"
 expose_list = true
 
